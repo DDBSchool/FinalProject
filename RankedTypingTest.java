@@ -2,20 +2,37 @@ import java.util.*;
 
 public class RankedTypingTest {
     private static final int[] POINTS_PER_WORD = {1, 2, 3, 4, 6};
-    private static final int[] POINTS_TO_PASS = {3, 6, 9, 12, 18}; // Example thresholds, adjust as needed
+    private static final int[] POINTS_TO_PASS = {1, 3, 6, 10, 18}; // Example thresholds
 
     public static void playRanked(Scanner sc, String username) {
         int level = 1;
         boolean passed = true;
+
+        // Accumulated stats for the whole session
+        int totalScore = 0;
+        int totalCorrect = 0;
+        int totalWords = 0;
+        double totalTime = 0.0;
+
+        String sessionDate = java.time.LocalDateTime.now().format(
+            java.time.format.DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")
+        );
+
         while (level <= 5 && passed) {
             int timeLimit = Text.getLevelTimeLimit(level);
-            String[] wordPool = Text.getLevelWords(level);
-            String[] words = Text.pickRandomWords(wordPool, 5); // pick 5 random words
+            String[] words = Text.getLevelWords(level);
 
-            RankedTestResult result = runLevel(sc, username, level, words, timeLimit);
-            ResultManager.saveResult(username, level, result.score, result.accuracy, result.wps, "ranked", result.date);
+            // Run the test for this level
+            RankedTestResult result = runLevel(sc, level, words, timeLimit);
 
-            if (result.score >= POINTS_TO_PASS[level-1]) {
+            // Accumulate results
+            totalScore += result.score;
+            totalCorrect += result.correct;
+            totalWords += words.length;
+            totalTime += result.timeTaken;
+
+            // Level progression logic
+            if (result.score >= POINTS_TO_PASS[level - 1]) {
                 System.out.println("Passed level " + level + "! Proceeding.");
                 level++;
             } else {
@@ -23,11 +40,32 @@ public class RankedTypingTest {
                 passed = false;
             }
         }
-        if (level > 5) System.out.println("Congratulations! You completed Ranked Mode!");
+
+        // Compute final stats
+        double finalAccuracy = (totalWords > 0) ? (100.0 * totalCorrect / totalWords) : 0;
+        double finalWps = (totalTime > 0) ? (double) totalCorrect / totalTime : 0;
+        int finalLevel = passed ? 5 : (level - 1);
+
+        // Save total result (only once, after all levels are played)
+        ResultManager.saveResult(username, finalLevel, totalScore, finalAccuracy, finalWps, "ranked", sessionDate);
+
+        if (passed) {
+            System.out.println("Congratulations! You completed Ranked Mode!");
+        }
     }
 
-    private static RankedTestResult runLevel(Scanner sc, String username, int level, String[] words, int timeLimit) {
-        int correct = 0, mistakes = 0, score = 0;
+    // Helper class to store per-level test results
+    private static class RankedTestResult {
+        int score, correct;
+        double timeTaken;
+        RankedTestResult(int s, int c, double t) {
+            score = s; correct = c; timeTaken = t;
+        }
+    }
+
+    // Returns per-level test result
+    private static RankedTestResult runLevel(Scanner sc, int level, String[] words, int timeLimit) {
+        int correct = 0, score = 0;
         long start = System.currentTimeMillis();
         long end = start + timeLimit * 1000L;
 
@@ -39,9 +77,7 @@ public class RankedTypingTest {
             if (System.currentTimeMillis() >= end) break;
             if (input.trim().equals(word)) {
                 correct++;
-                score += POINTS_PER_WORD[level-1];
-            } else {
-                mistakes++;
+                score += POINTS_PER_WORD[level - 1];
             }
         }
         long finish = Math.min(System.currentTimeMillis(), end);
@@ -51,19 +87,12 @@ public class RankedTypingTest {
 
         // Bonus points if finished early and no mistakes
         int bonus = 0;
-        if (correct == words.length && mistakes == 0 && (finish < end)) {
-            // Example: 1 bonus per 2 seconds left
+        if (correct == words.length && (finish < end)) {
             bonus = (int) ((end - finish) / 2000);
             score += bonus;
             System.out.println("Bonus points for speed: " + bonus);
         }
-        String date = java.time.LocalDateTime.now().format(java.time.format.DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
         System.out.printf("Score: %d | Accuracy: %.2f%% | WPS: %.2f\n", score, accuracy, wps);
-        return new RankedTestResult(score, accuracy, wps, date);
-    }
-
-    private static class RankedTestResult {
-        int score; double accuracy; double wps; String date;
-        RankedTestResult(int s, double a, double w, String d) { score = s; accuracy = a; wps = w; date = d; }
+        return new RankedTestResult(score, correct, elapsed);
     }
 }
