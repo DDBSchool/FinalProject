@@ -1,1 +1,34 @@
 
+CREATE DATABASE pawpatrol CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+USE pawpatrol;
+
+
+-- User table: store account credentials
+CREATE TABLE users (
+    username VARCHAR(32) PRIMARY KEY,
+    password_hash VARCHAR(255) NOT NULL,            -- Store hashed password, NOT plaintext
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Typing test results: one entry per game played
+CREATE TABLE typing_results (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    username VARCHAR(32) NOT NULL,
+    level INT NOT NULL CHECK (level BETWEEN 1 AND 5),
+    score INT NOT NULL,
+    accuracy DOUBLE NOT NULL CHECK (accuracy BETWEEN 0 AND 100),
+    words_per_second DOUBLE NOT NULL,
+    type ENUM('ranked', 'unranked') NOT NULL,
+    test_time DATETIME NOT NULL,
+    FOREIGN KEY (username) REFERENCES users(username)
+        ON UPDATE CASCADE
+        ON DELETE CASCADE
+);
+
+-- Indexes for performance on leaderboard/statistics
+CREATE INDEX idx_typing_results_username ON typing_results(username);
+CREATE INDEX idx_typing_results_type ON typing_results(type);
+CREATE INDEX idx_typing_results_score ON typing_results(score DESC);
+CREATE INDEX idx_typing_results_accuracy ON typing_results(accuracy DESC);
+CREATE INDEX idx_typing_results_wps ON typing_results(words_per_second DESC);
