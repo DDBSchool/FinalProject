@@ -29,7 +29,6 @@ public class UserManager {
                 stmt.setString(1, username);
                 stmt.setString(2, password);
                 stmt.executeUpdate();
-                System.out.println("User created successfully!");
                 return true;
             }
         } catch (SQLException e) {
