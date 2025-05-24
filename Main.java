@@ -70,7 +70,7 @@ public class Main {
                     UnrankedTypingTest.playUnranked(sc, username);
                     break;
                 case "3":
-                    ResultManager.showLeaderboard();
+                	LeaderboardMenu.showLeaderboardMenu(sc);
                     break;
                 case "4":
                     ProfileManager.showProfile(sc, username);
