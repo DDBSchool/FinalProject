@@ -24,7 +24,7 @@ public class UserManager {
     // Create user method: returns true if user created successfully
     public boolean createUser(String username, String password) {
         try (Connection conn = JDBCUtil.getConnection()) {
-            String sql = "INSERT INTO users (username, password) VALUES (?, ?)";
+            String sql = "INSERT INTO users (username, password_hash) VALUES (?, ?)";
             try (PreparedStatement stmt = conn.prepareStatement(sql)) {
                 stmt.setString(1, username);
                 stmt.setString(2, password);
