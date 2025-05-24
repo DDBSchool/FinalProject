@@ -2,20 +2,19 @@ import java.util.*;
 
 public class RankedTypingTest {
     private static final int[] POINTS_PER_WORD = {1, 2, 3, 4, 6};
-    private static final int[] POINTS_TO_PASS = {1, 3, 6, 10, 18}; // Example thresholds
+    private static final int[] POINTS_TO_PASS = {3, 6, 9, 12, 18}; // Example thresholds, adjust as needed
 
     public static void playRanked(Scanner sc, String username) {
         int level = 1;
         boolean passed = true;
         while (level <= 5 && passed) {
             int timeLimit = Text.getLevelTimeLimit(level);
-            String[] words = Text.getLevelWords(level);
+            String[] wordPool = Text.getLevelWords(level);
+            String[] words = Text.pickRandomWords(wordPool, 5); // pick 5 random words
 
-            // Run the test
             RankedTestResult result = runLevel(sc, username, level, words, timeLimit);
             ResultManager.saveResult(username, level, result.score, result.accuracy, result.wps, "ranked", result.date);
 
-            // Level progression logic
             if (result.score >= POINTS_TO_PASS[level-1]) {
                 System.out.println("Passed level " + level + "! Proceeding.");
                 level++;
