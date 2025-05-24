@@ -6,7 +6,8 @@ public class UnrankedTypingTest {
         int level = Integer.parseInt(sc.nextLine());
         System.out.print("Enter time limit in seconds: ");
         int timeLimit = Integer.parseInt(sc.nextLine());
-        String[] words = Text.getLevelWords(level);
+        String[] wordPool = Text.getLevelWords(level);
+        String[] words = Text.pickRandomWords(wordPool, 5); // pick 5 unique random words per play
 
         int correct = 0;
         long start = System.currentTimeMillis();
