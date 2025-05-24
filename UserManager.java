@@ -7,7 +7,7 @@ public class UserManager {
 
     // Login method: returns true if username/password match
     public boolean login(String username, String password) {
-        String sql = "SELECT * FROM users WHERE username = ? AND password = ?";
+        String sql = "SELECT * FROM users WHERE username = ? AND password_hash = ?";
         try (Connection conn = JDBCUtil.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setString(1, username);
