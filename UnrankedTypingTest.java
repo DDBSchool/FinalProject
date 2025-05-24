@@ -6,8 +6,7 @@ public class UnrankedTypingTest {
         int level = Integer.parseInt(sc.nextLine());
         System.out.print("Enter time limit in seconds: ");
         int timeLimit = Integer.parseInt(sc.nextLine());
-        String[] wordPool = Text.getLevelWords(level);
-        String[] words = Text.pickRandomWords(wordPool, 5); // pick 5 unique random words per play
+        String[] words = Text.getLevelWords(level);
 
         int correct = 0;
         long start = System.currentTimeMillis();
@@ -19,7 +18,12 @@ public class UnrankedTypingTest {
             String input = sc.nextLine();
             if (System.currentTimeMillis() >= end) break;
             if (input.trim().equals(word)) {
+                // Print correct answers in green
+                System.out.println("\u001B[32mCorrect! You typed: \"" + input + "\"\u001B[0m");
                 correct++;
+            } else {
+                // Print incorrect answers in red
+                System.out.println("\u001B[31mIncorrect! You typed: \"" + input + "\" | Expected: \"" + word + "\"\u001B[0m");
             }
         }
         long finish = Math.min(System.currentTimeMillis(), end);
