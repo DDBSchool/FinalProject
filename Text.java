@@ -1,46 +1,34 @@
+import java.util.*;
+
 public class Text {
-    // Harder words/phrases per level (5 per level)
-    public static final String[][] LEVELS = {
-        // Level 1: Single challenging words
-        {"xylophone", "quizzical", "mnemonic", "zephyr", "juxtapose"},
-        // Level 2: Two-word tricky phrases
-        {"cryptic glyph", "zealous quest", "azure vortex", "lunar eclipse", "sphinx riddle"},
-        // Level 3: Three-word advanced phrases
-        {"quantum entanglement theory", "symphonic jazz improvisation", "synchronous digital circuit", "fractal geometry puzzle", "recursive lambda calculus"},
-        // Level 4: Short, complex sentences
-        {"Sphinxes quietly judge zany jesters.",
-         "Quixotic quests require zealous effort.",
-         "Jovial hackers encrypt quirky messages.",
-         "Glyptodon fossils mystify experts.",
-         "Mnemonic rhymes expedite learning."},
-        // Level 5: Longer, sophisticated sentences
-        {"Juxtaposing paradoxical hypotheses, the physicist unraveled quantum mysteries.",
-         "Cryptographers analyze seemingly indecipherable ciphers with unwavering focus.",
-         "Mnemonic devices, though quirky, greatly enhance cognitive retention.",
-         "Meticulous experimentation yields perplexing yet insightful results.",
-         "The zephyr’s whimsical journey across continents inspired countless legends."}
+    // Expanded word pools for each level with longer, more challenging words
+    private static final String[][] LEVEL_WORDS = {
+        // Level 1: moderately long, but still introductory
+        {"elephant", "computer", "umbrella", "building", "calendar", "hospital", "diamond", "sandwich", "festival", "mountain", "dolphin", "airplane", "notebook", "penguin", "language"},
+        // Level 2: longer, multisyllabic words
+        {"adventure", "chocolate", "education", "happiness", "reception", "community", "direction", "microscope", "telephone", "recreation", "volunteer", "president", "refrigerator", "basketball", "invisible"},
+        // Level 3: abstract and advanced vocabulary
+        {"perception", "motivation", "conclusion", "generation", "opposition", "foundation", "regulation", "preference", "convention", "invitation", "population", "resolution", "foundation", "assignment", "occupation"},
+        // Level 4: even longer, with more complex structure
+        {"responsibility", "communication", "organization", "concentration", "demonstration", "representation", "determination", "collaboration", "architecture", "transformation", "recommendation", "entertainment", "appreciation", "announcement", "achievement"},
+        // Level 5: very long, advanced, and uncommon words
+        {"encyclopedia", "philanthropist", "misinterpretation", "incompatibility", "internationalization", "uncharacteristically", "counterproductive", "institutionalization", "photosynthesis", "conceptualization", "misunderstanding", "unquestionably", "disproportionately", "oversimplification", "indistinguishable"}
     };
 
-    // Time limits for each level, in seconds
-    public static final int[] LEVEL_TIME_LIMITS = {10, 15, 20, 25, 30};
+    private static final int[] LEVEL_TIME_LIMITS = {30, 30, 30, 35, 40}; // example: can be adjusted
 
-    // Returns exactly N words for level N (levels 1-5)
     public static String[] getLevelWords(int level) {
-        if (level < 1 || level > LEVELS.length) {
-            throw new IllegalArgumentException("Level must be 1-5");
-        }
-        String[] levelWords = LEVELS[level - 1];
-        int numWords = Math.min(level, levelWords.length);
-        String[] result = new String[numWords];
-        System.arraycopy(levelWords, 0, result, 0, numWords);
-        return result;
+        return LEVEL_WORDS[level-1];
     }
 
-    // Returns time limit for level (levels 1-5)
     public static int getLevelTimeLimit(int level) {
-        if (level < 1 || level > LEVEL_TIME_LIMITS.length) {
-            throw new IllegalArgumentException("Level must be 1-5");
-        }
-        return LEVEL_TIME_LIMITS[level - 1];
+        return LEVEL_TIME_LIMITS[level-1];
+    }
+
+    // Helper to pick n unique random words from the word pool
+    public static String[] pickRandomWords(String[] wordPool, int n) {
+        List<String> pool = new ArrayList<>(Arrays.asList(wordPool));
+        Collections.shuffle(pool);
+        return pool.subList(0, Math.min(n, pool.size())).toArray(new String[0]);
     }
 }
