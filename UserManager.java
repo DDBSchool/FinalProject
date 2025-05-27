@@ -1,7 +1,7 @@
 package s1finalproject;
 
 
-package s1finalproject;
+
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
