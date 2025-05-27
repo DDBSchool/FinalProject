@@ -5,7 +5,7 @@ import java.sql.DriverManager;
 import java.sql.SQLException;
 
 public class JDBCUtil {
-    private static final String DB_URL = "jdbc:mysql://localhost:3306/pawpatrol";
+    private static final String DB_URL = "jdbc:mysql://localhost:3306/pawpatrol2";
     private static final String DB_USER = "root";
     private static final String DB_PASS = "";
 
