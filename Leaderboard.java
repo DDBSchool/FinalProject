@@ -31,7 +31,10 @@ public class Leaderboard {
             case "wps":
             default: orderBy = "words_per_second DESC"; break;
         }
-        String sql = "SELECT username, score, accuracy, words_per_second, test_time FROM typing_results ORDER BY " + orderBy;
+        // Join users and typing_results to get username and result metrics
+        String sql = "SELECT u.username, tr.score, tr.accuracy, tr.words_per_second, tr.test_time " +
+                     "FROM typing_results tr JOIN users u ON tr.user_id = u.id " +
+                     "ORDER BY " + orderBy;
         List<ResultRow> results = new ArrayList<>();
         try (Connection conn = JDBCUtil.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql);
