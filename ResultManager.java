@@ -4,12 +4,18 @@ import java.sql.*;
 import java.util.*;
 
 public class ResultManager {
-    // Save result, now includes type and date
+    // Save result, now uses user_id instead of username
     public static void saveResult(String username, int level, int score, double accuracy, double wps, String type, String date) {
-        String sql = "INSERT INTO typing_results (username, level, score, accuracy, words_per_second, type, test_time) VALUES (?, ?, ?, ?, ?, ?, ?)";
+        UserManager userManager = new UserManager();
+        Integer userId = userManager.getUserId(username);
+        if (userId == null) {
+            System.out.println("User not found, cannot save result.");
+            return;
+        }
+        String sql = "INSERT INTO typing_results (user_id, level, score, accuracy, words_per_second, type, test_time) VALUES (?, ?, ?, ?, ?, ?, ?)";
         try (Connection conn = JDBCUtil.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
-            stmt.setString(1, username);
+            stmt.setInt(1, userId);
             stmt.setInt(2, level);
             stmt.setInt(3, score);
             stmt.setDouble(4, accuracy);
@@ -22,13 +28,18 @@ public class ResultManager {
         }
     }
 
-    // Get last 10 games for user and type
+    // Get last 10 games for user and type, joining users to get username if needed
     public static List<GameResult> getUserGames(String username, String type) {
         List<GameResult> results = new ArrayList<>();
-        String sql = "SELECT * FROM typing_results WHERE username=? AND type=? ORDER BY test_time DESC LIMIT 10";
+        UserManager userManager = new UserManager();
+        Integer userId = userManager.getUserId(username);
+        if (userId == null) return results;
+
+        String sql = "SELECT tr.test_time, tr.level, tr.score, tr.accuracy, tr.words_per_second " +
+                     "FROM typing_results tr WHERE tr.user_id=? AND tr.type=? ORDER BY tr.test_time DESC LIMIT 10";
         try (Connection conn = JDBCUtil.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
-            stmt.setString(1, username);
+            stmt.setInt(1, userId);
             stmt.setString(2, type);
             ResultSet rs = stmt.executeQuery();
             while (rs.next()) {
@@ -44,12 +55,16 @@ public class ResultManager {
 
     // Get stats for user and type
     public static Stats getStats(String username, String type) {
+        UserManager userManager = new UserManager();
+        Integer userId = userManager.getUserId(username);
+        if (userId == null) return new Stats(0, 0, 0);
+
         String sql = type.equals("ranked")
-            ? "SELECT MAX(score) as max_score, AVG(accuracy) as avg_acc, AVG(words_per_second) as avg_wps FROM typing_results WHERE username=? AND type=?"
-            : "SELECT AVG(accuracy) as avg_acc, AVG(words_per_second) as avg_wps FROM typing_results WHERE username=? AND type=?";
+            ? "SELECT MAX(score) as max_score, AVG(accuracy) as avg_acc, AVG(words_per_second) as avg_wps FROM typing_results WHERE user_id=? AND type=?"
+            : "SELECT AVG(accuracy) as avg_acc, AVG(words_per_second) as avg_wps FROM typing_results WHERE user_id=? AND type=?";
         try (Connection conn = JDBCUtil.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
-            stmt.setString(1, username);
+            stmt.setInt(1, userId);
             stmt.setString(2, type);
             ResultSet rs = stmt.executeQuery();
             if (rs.next()) {
