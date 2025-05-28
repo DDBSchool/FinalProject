@@ -5,25 +5,25 @@ import java.util.*;
 
 public class Leaderboard {
 
-    // Top 10 unique players by selected metric
-    public static void showTop10Unique(String metric) {
-        List<ResultRow> results = getAllResultsSortedBy(metric);
+    // Top 10 unique players by selected metric for specific level
+    public static void showTop10Unique(String metric, int level) {
+        List<ResultRow> results = getAllResultsSortedBy(metric, level);
         LinkedHashMap<String, ResultRow> bestPerUser = new LinkedHashMap<>();
         for (ResultRow r : results) {
             if (!bestPerUser.containsKey(r.username)) bestPerUser.put(r.username, r);
             if (bestPerUser.size() == 10) break;
         }
-        printLeaderboard(new ArrayList<>(bestPerUser.values()), metric, true);
+        printLeaderboard(new ArrayList<>(bestPerUser.values()), metric, true, level);
     }
 
-    // Top 10 attempts (all attempts)
-    public static void showTop10Attempts() {
-        List<ResultRow> results = getAllResultsSortedBy("wps");
-        printLeaderboard(results.subList(0, Math.min(10, results.size())), "wps", false);
+    // Top 10 attempts (all attempts) for specific level
+    public static void showTop10Attempts(int level) {
+        List<ResultRow> results = getAllResultsSortedBy("wps", level);
+        printLeaderboard(results.subList(0, Math.min(10, results.size())), "wps", false, level);
     }
 
-    // Fetch all results sorted by given metric (wps, accuracy, score)
-    private static List<ResultRow> getAllResultsSortedBy(String metric) {
+    // Fetch all results sorted by given metric for a specific level
+    private static List<ResultRow> getAllResultsSortedBy(String metric, int level) {
         String orderBy;
         switch (metric) {
             case "score": orderBy = "score DESC"; break;
@@ -31,22 +31,23 @@ public class Leaderboard {
             case "wps":
             default: orderBy = "words_per_second DESC"; break;
         }
-        // Join users and typing_results to get username and result metrics
         String sql = "SELECT u.username, tr.score, tr.accuracy, tr.words_per_second, tr.test_time " +
                      "FROM typing_results tr JOIN users u ON tr.user_id = u.id " +
-                     "ORDER BY " + orderBy;
+                     "WHERE tr.level = ? ORDER BY " + orderBy;
         List<ResultRow> results = new ArrayList<>();
         try (Connection conn = JDBCUtil.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql);
-             ResultSet rs = stmt.executeQuery()) {
-            while (rs.next()) {
-                results.add(new ResultRow(
-                    rs.getString("username"),
-                    rs.getInt("score"),
-                    rs.getDouble("accuracy"),
-                    rs.getDouble("words_per_second"),
-                    rs.getString("test_time")
-                ));
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setInt(1, level);
+            try (ResultSet rs = stmt.executeQuery()) {
+                while (rs.next()) {
+                    results.add(new ResultRow(
+                        rs.getString("username"),
+                        rs.getInt("score"),
+                        rs.getDouble("accuracy"),
+                        rs.getDouble("words_per_second"),
+                        rs.getString("test_time")
+                    ));
+                }
             }
         } catch (SQLException e) {
             e.printStackTrace();
@@ -54,9 +55,9 @@ public class Leaderboard {
         return results;
     }
 
-    // Print formatted leaderboard
-    private static void printLeaderboard(List<ResultRow> list, String metric, boolean unique) {
-        String title = "Top 10 " + (metric.equals("wps") ? "Fastest" : metric.equals("accuracy") ? "by Accuracy" : "Most Points");
+    // Print leaderboard, include level in title
+    private static void printLeaderboard(List<ResultRow> list, String metric, boolean unique, int level) {
+        String title = "Level " + level + " — Top 10 " + (metric.equals("wps") ? "Fastest" : metric.equals("accuracy") ? "by Accuracy" : "Most Points");
         if (unique) title += " (Unique Players)";
         else title += " (All Attempts)";
         System.out.println("\n=== " + title + " ===");
