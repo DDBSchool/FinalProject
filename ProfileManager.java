@@ -17,8 +17,13 @@ public class ProfileManager {
                 ResultManager.Stats stats = ResultManager.getStats(username, type);
                 System.out.println("\nLast 10 " + type + " games:");
                 for (ResultManager.GameResult g : games) {
-                    System.out.printf("Date: %s | Level: %d | Score: %d | Acc: %.2f%% | WPS: %.2f\n",
-                        g.date, g.level, g.score, g.accuracy, g.wps);
+                    if (type.equals("ranked")) {
+                        System.out.printf("Date: %s | Level: %d | Score: %d | Acc: %.2f%% | WPS: %.2f\n",
+                            g.date, g.level, g.score, g.accuracy, g.wps);
+                    } else {
+                        System.out.printf("Date: %s | Level: %d | Acc: %.2f%% | WPS: %.2f\n",
+                            g.date, g.level, g.accuracy, g.wps);
+                    }
                 }
                 if (type.equals("ranked")) {
                     System.out.printf("Highest Score: %d | Avg Acc: %.2f%% | Avg WPS: %.2f\n",
