@@ -33,7 +33,7 @@ public class Leaderboard {
         }
         String sql = "SELECT u.username, tr.score, tr.accuracy, tr.words_per_second, tr.test_time " +
                      "FROM typing_results tr JOIN users u ON tr.user_id = u.id " +
-                     "WHERE tr.level = ? ORDER BY " + orderBy;
+                     "WHERE tr.level = ? AND tr.type = 'ranked' ORDER BY " + orderBy;
         List<ResultRow> results = new ArrayList<>();
         try (Connection conn = JDBCUtil.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
